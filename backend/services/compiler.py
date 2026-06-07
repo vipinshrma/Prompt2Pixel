@@ -1,6 +1,7 @@
 import os
 import docker
 from services.openai_service import generate_manim_code, heal_manim_code
+from services.cache_service import find_similar_prompt, insert_cache
 
 # Initialize docker client
 try:
@@ -94,16 +95,42 @@ def compile_and_heal_generator(prompt: str, model: str = "gpt-4o-mini"):
         yield "[ERROR] Docker is not available on the backend server.\n"
         return
 
-    # 1. Generate code from prompt
-    yield f"[INFO] Contacting OpenAI ({model}) to generate animation code...\n"
-    try:
-        code, scene_name = generate_manim_code(prompt, model)
-        yield f"[INFO] Generated scene class name: '{scene_name}'\n"
-        # Stream the code back so the frontend can populate the editor
-        yield f"[CODE]\n{code}\n[/CODE]\n"
-    except Exception as e:
-        yield f"[ERROR] Code generation failed: {str(e)}\n"
-        return
+    # Check the cache first
+    yield "[INFO] Checking cache...\n"
+    match = find_similar_prompt(prompt)
+    
+    code = None
+    scene_name = None
+
+    if match:
+        yield f"[INFO] Found matching prompt in cache.\n"
+        yield f"[INFO] Match prompt: \"{match['prompt']}\"\n"
+        
+        video_rel_path = match['video_rel_path']
+        video_full_path = os.path.join(RENDERS_LOCAL_DIR, video_rel_path)
+        
+        if os.path.exists(video_full_path):
+            yield f"[INFO] Reusing cached video render: {video_rel_path}\n"
+            yield f"[INFO] Generated scene class name: '{match['scene_name']}'\n"
+            yield f"[CODE]\n{match['code']}\n[/CODE]\n"
+            yield f"\n[SUCCESS] Render complete! Video URL: /renders/{video_rel_path}\n"
+            return
+        else:
+            yield "[WARNING] Cached video file not found on disk. Re-compiling the cached code...\n"
+            code = match['code']
+            scene_name = match['scene_name']
+
+    if code is None or scene_name is None:
+        # 1. Generate code from prompt
+        yield f"[INFO] Contacting OpenAI ({model}) to generate animation code...\n"
+        try:
+            code, scene_name = generate_manim_code(prompt, model)
+            yield f"[INFO] Generated scene class name: '{scene_name}'\n"
+            # Stream the code back so the frontend can populate the editor
+            yield f"[CODE]\n{code}\n[/CODE]\n"
+        except Exception as e:
+            yield f"[ERROR] Code generation failed: {str(e)}\n"
+            return
 
     # 2. Main compile-and-heal loop
     max_attempts = 2
@@ -156,6 +183,12 @@ def compile_and_heal_generator(prompt: str, model: str = "gpt-4o-mini"):
 
             if exit_code == 0 and os.path.exists(video_full_path):
                 yield f"\n[SUCCESS] Render complete! Video URL: /renders/{video_rel_path}\n"
+                # Save to cache
+                try:
+                    insert_cache(prompt, code, scene_name, video_rel_path)
+                    yield "[INFO] Successfully cached this animation for future runs.\n"
+                except Exception as cache_err:
+                    yield f"[WARNING] Failed to cache animation: {str(cache_err)}\n"
                 # Success! Terminate the generator loop
                 return
             else:

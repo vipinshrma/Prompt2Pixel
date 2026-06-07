@@ -103,7 +103,24 @@ File ready at '/manim/media/videos/scene/720p30/TestScene.mp4'
 
 ---
 
-### 4. Setup Local IDE Autocomplete & Linting (Optional)
+### 4. Prompt Caching (SQLite & Normalization)
+To avoid unnecessary LLM code generation calls and heavy Docker Manim compilation runs (~10–30s), successful animations are cached locally.
+
+* **Database**: Metadata, python code, and file paths are stored in an SQLite database located at `backend/cache.db` (which persists via Docker volumes).
+* **Normalization**: The prompt is normalized (lowercased, punctuation stripped, stop-words/action-verbs filtered, and tokens sorted alphabetically) to produce a unique `cache_key`.
+* **Behavior**: 
+  * If a synonymous prompt matches an entry in the cache and the `.mp4` file exists, it is served **instantly** (under 1 second).
+  * If the video file is deleted from disk, the system re-compiles the cached Python code directly (skipping OpenAI generation).
+
+**Run Caching Unit Tests**:
+To verify cache hits, synonym matching, and shape/color collision safety, run the test suite inside the running container:
+```bash
+docker exec manim_backend python /app/test_cache.py
+```
+
+---
+
+### 5. Setup Local IDE Autocomplete & Linting (Optional)
 To get IDE autocompletion for python code in Cursor/VS Code on your host machine, initialize a local virtual environment:
 
 ```bash
