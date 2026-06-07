@@ -29,13 +29,15 @@ You MUST adhere to these strict guidelines:
 11. PREVENT OVERFLOW & SCREEN CUT-OFF (VERY IMPORTANT):
     - For long text descriptions or sentences (more than 4-5 words), do NOT render them in a single horizontal line. Use `Paragraph("line 1", "line 2", ...)` or insert manual newlines `\n` in `Text` to split the text into multiple vertical lines.
     - Avoid vertical overflow: Stacking multiple shapes, text, or formulas vertically can run off the top/bottom edges.
-    - SAFE BOX SCALING: Always group your main on-screen elements into a single `VGroup` (e.g., `main_group = VGroup(title, paragraph, math_objs)`) and scale the entire group so that it fits comfortably within a safe box of width 12 and height 6.5:
+    - SAFE BOX SCALING & LAYOUT: Always arrange your main on-screen elements (vertically or horizontally) first, group them, and then scale the entire group to fit inside the safe box:
       ```python
-      # Example safe bounding box scaling:
+      # Example safe bounding box layout and scaling:
+      main_group = VGroup(title, formula, graph_axes, paragraph)
+      main_group.arrange(DOWN, buff=0.4)  # Crucial: Layout them vertically so they do not overlap at ORIGIN!
       main_group.scale_to_fit_width(12)
       if main_group.height > 6.5:
           main_group.scale_to_fit_height(6.5)
-      main_group.move_to(ORIGIN)  # Center it on screen
+      main_group.move_to(ORIGIN)  # Center the entire layout on screen
       ```
     - Never let any group or single object exceed a width of 12.0 units or a height of 6.5 units, ensuring it remains fully visible within the 16:9 viewport boundaries.
 12. TYPOGRAPHIC HIERARCHY & FONT SIZES:

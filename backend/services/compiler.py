@@ -40,7 +40,7 @@ def compile_manim_generator(code: str, scene_name: str):
         # We start the container detaching immediately so we can stream logs
         container = client.containers.run(
             image="manimcommunity/manim:stable",
-            command=f"manim -qm {filename} {scene_name}",
+            command=f"manim -qh {filename} {scene_name}",
             volumes={
                 HOST_RENDERS_DIR: {
                     'bind': '/manim',
@@ -68,8 +68,8 @@ def compile_manim_generator(code: str, scene_name: str):
             yield f"[WARNING] Failed to remove compiler container: {str(remove_err)}\n"
 
         # 6. Verify if output file was created
-        # Default Manim directory structure: media/videos/scene/720p30/SceneName.mp4
-        video_rel_path = f"media/videos/scene/720p30/{scene_name}.mp4"
+        # Default Manim directory structure: media/videos/scene/1080p60/SceneName.mp4
+        video_rel_path = f"media/videos/scene/1080p60/{scene_name}.mp4"
         video_full_path = os.path.join(RENDERS_LOCAL_DIR, video_rel_path)
 
         if exit_code == 0 and os.path.exists(video_full_path):
@@ -153,7 +153,7 @@ def compile_and_heal_generator(prompt: str, model: str = "gpt-4o-mini"):
         try:
             container = client.containers.run(
                 image="manimcommunity/manim:stable",
-                command=f"manim -qm {filename} {scene_name}",
+                command=f"manim -qh {filename} {scene_name}",
                 volumes={
                     HOST_RENDERS_DIR: {
                         'bind': '/manim',
@@ -178,7 +178,7 @@ def compile_and_heal_generator(prompt: str, model: str = "gpt-4o-mini"):
             container.remove()
 
             # Check if video was successfully created
-            video_rel_path = f"media/videos/scene/720p30/{scene_name}.mp4"
+            video_rel_path = f"media/videos/scene/1080p60/{scene_name}.mp4"
             video_full_path = os.path.join(RENDERS_LOCAL_DIR, video_rel_path)
 
             if exit_code == 0 and os.path.exists(video_full_path):

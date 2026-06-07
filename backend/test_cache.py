@@ -37,7 +37,7 @@ def run_tests():
     prompt = "Draw a glowing green triangle"
     code = "from manim import *\nclass GreenTriangle(Scene):\n    def construct(self):\n        self.play(Create(Triangle(color=GREEN)))\n"
     scene_name = "GreenTriangle"
-    video_rel_path = "media/videos/scene/720p30/GreenTriangle.mp4"
+    video_rel_path = "media/videos/scene/1080p60/GreenTriangle.mp4"
     
     insert_cache(prompt, code, scene_name, video_rel_path)
     print("Cache entry inserted successfully.")

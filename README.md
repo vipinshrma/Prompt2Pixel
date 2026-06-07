@@ -96,9 +96,9 @@ curl -N -X POST \
 Manim Community v0.20.1
 Animation 0: Create(Circle):   0%|          | 0/30 [00:00<?, ?it/s]
 Animation 0: Create(Circle):  93%|█████████▎| 28/30 [00:00<00:00, 269it/s]
-File ready at '/manim/media/videos/scene/720p30/TestScene.mp4'
+File ready at '/manim/media/videos/scene/1080p60/TestScene.mp4'
 
-[SUCCESS] Render complete! Video URL: /renders/media/videos/scene/720p30/TestScene.mp4
+[SUCCESS] Render complete! Video URL: /renders/media/videos/scene/1080p60/TestScene.mp4
 ```
 
 ---
