@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: manim_backend
+    ports:
+      - "8020:8000"
+    volumes:
+      # Mount the host's Docker socket so the backend can spawn sibling containers
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Mount the local renders directory to share compiled output between host and container
+      - ./renders:/app/renders
+      # Mount the backend source code directory for hot-reloading
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    environment:
+      # Crucial: The backend needs to know the absolute HOST path to mount folders for the sibling container
+      - HOST_RENDERS_DIR=/Users/vipan/Desktop/projects/prompt2pixel/renders
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: manim_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8020
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: always

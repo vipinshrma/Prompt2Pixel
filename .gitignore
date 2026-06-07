@@ -1,0 +1,26 @@
+# Dependency directories
+node_modules/
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Local env files
+.env
+.env.local
+.env.*
+!.env.example
+
+# Renders output / media / caches
+renders/
+**/renders/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
