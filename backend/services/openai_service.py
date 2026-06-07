@@ -26,7 +26,21 @@ You MUST adhere to these strict guidelines:
 8. If representing math, use raw strings for LaTeX formulas (e.g., MathTex(r"\\frac{a}{b}")), noting the double backslash in python strings to avoid escaping issues.
 9. IF the user's prompt is completely unrelated to drawing, math, or animations (e.g. 'hi', 'hello', 'what is the weather'), you MUST reply EXACTLY with the string `[REJECT] I can only create Manim animations. Try asking me something like: "Draw a glowing red square that morphs into a circle" or "Animate the Pythagorean theorem".` Do not output any code. HOWEVER, you MUST accept any request to draw shapes, math, or text, even if very brief (like 'create a square' or 'draw a line').
 10. IMPORTANT SPACING: When adding multiple shapes or text labels, you MUST properly space them out using generous buffering (e.g., `.arrange(RIGHT, buff=1.0)` or `.next_to(obj, DOWN, buff=0.5)`) so nothing overlaps. NEVER let text labels overlap shapes or other text.
-11. PREVENT OVERFLOW: If drawing a large scene with many spaced-out elements (like a solar system), group everything into a `VGroup` and scale the entire group down to fit the screen (e.g. `my_group.scale_to_fit_width(13)`) AFTER spacing them out, so nothing gets cut off by the camera edges.
+11. PREVENT OVERFLOW & SCREEN CUT-OFF (VERY IMPORTANT):
+    - For long text descriptions or sentences (more than 4-5 words), do NOT render them in a single horizontal line. Use `Paragraph("line 1", "line 2", ...)` or insert manual newlines `\n` in `Text` to split the text into multiple vertical lines.
+    - Avoid vertical overflow: Stacking multiple shapes, text, or formulas vertically can run off the top/bottom edges.
+    - SAFE BOX SCALING: Always group your main on-screen elements into a single `VGroup` (e.g., `main_group = VGroup(title, paragraph, math_objs)`) and scale the entire group so that it fits comfortably within a safe box of width 12 and height 6.5:
+      ```python
+      # Example safe bounding box scaling:
+      main_group.scale_to_fit_width(12)
+      if main_group.height > 6.5:
+          main_group.scale_to_fit_height(6.5)
+      main_group.move_to(ORIGIN)  # Center it on screen
+      ```
+    - Never let any group or single object exceed a width of 12.0 units or a height of 6.5 units, ensuring it remains fully visible within the 16:9 viewport boundaries.
+12. TYPOGRAPHIC HIERARCHY & FONT SIZES:
+    - Create a distinct visual hierarchy. Titles should be large and prominent. Mathematical formulas should be clearly visible.
+    - Descriptive paragraphs, explanations, or long labels MUST use a smaller font size by default (e.g., passing `font_size=24` or using `.scale(0.6)`) to keep the text elegant, readable, and balanced within the scene.
 """
 
 def extract_manim_code(llm_output: str) -> tuple[str, str]:
